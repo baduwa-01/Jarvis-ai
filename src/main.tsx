@@ -51,7 +51,7 @@ function App(){
         <button className="metric-card" onClick={()=>openPanel('monitors')}><span className="metric-icon"><Wifi/></span><span><b>NETWORK</b><small>Wi-Fi connected</small></span><ChevronRight className="chev"/></button>
       </div>
       <div className="face-stage"><div className="stage-orbit orbit-one"/><div className="stage-orbit orbit-two"/><div className="stage-grid"/><div className="corner corner-tl"/><div className="corner corner-tr"/><div className="corner corner-bl"/><div className="corner corner-br"/>
-        <iframe ref={avatar} title="JARVIS 3D wireframe avatar" src="/3d/jarvis-avatar.html" className="avatar-frame" allow="autoplay" />
+        <iframe ref={avatar} title="JARVIS 3D wireframe avatar" src={`${import.meta.env.BASE_URL}3d/jarvis-avatar.html`} className="avatar-frame" allow="autoplay" />
         <div className="face-label"><span className="pulse-dot"/> HOLOGRAPHIC CORE <span>•</span> ONLINE</div>
       </div>
       <div className="side-stack right-stack">
