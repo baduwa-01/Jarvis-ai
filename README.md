@@ -1,29 +1,37 @@
 # J.A.R.V.I.S. Web UI Preview (Frontend Only)
 
-A responsive React + TypeScript + Vite website to preview the J.A.R.V.I.S. mobile UI in a browser. It is intentionally frontend-only: no Kotlin backend, AI provider, microphone capture, device permissions, phone control, or live telemetry is connected. Buttons show sample UI states only.
+A responsive React + TypeScript + Vite UI preview. This project does not connect to the Kotlin backend, AI APIs, phone controls, microphone recognition, or live device telemetry.
 
-## Requirements
-- Node.js 20+ (Node.js 22 recommended)
-- npm
+## Publish on GitHub Pages
+
+1. Create a GitHub repository.
+2. Extract this project ZIP and upload the **contents of the `jarvis-web-ui` folder** to the repository root. The root should contain `package.json`, `index.html`, `src/`, `public/`, `vite.config.ts`, and `.github/`.
+3. Commit the files to the `main` (or `master`) branch.
+4. In GitHub, open **Settings → Pages**.
+5. Under **Build and deployment → Source**, choose **GitHub Actions**.
+6. Open the **Actions** tab and wait for **Deploy JARVIS UI to GitHub Pages** to finish successfully.
+7. The site URL will be shown in the deployment job, usually `https://YOUR-USERNAME.github.io/YOUR-REPOSITORY/`.
+
+The included workflow automatically builds the Vite site and deploys it. It also configures the correct base path for a project repository and for a `USERNAME.github.io` repository.
 
 ## Run locally
+
+Requires Node.js 20+ (Node.js 22 recommended).
+
 ```bash
 npm install
 npm run dev
 ```
-Open the local URL printed by Vite, usually `http://localhost:5173`.
 
-## Production build
+## Build locally
+
 ```bash
 npm run build
 npm run preview
 ```
-The static production output is created in `dist/`. Upload the contents of `dist/` to any static hosting service.
-
-## 3D avatar
-The existing Three.js avatar HTML and assets are copied into `public/3d/` and shown in an iframe. The face uses the existing GLB mesh; no lip-sync or Kotlin/JARVIS logic is connected. The SHOW MORE UI controls are preview-only.
 
 ## Notes
-- Weather, battery, RAM, network, tasks and logs use sample display data.
-- The chat form updates a local preview reply only; it does not send data anywhere.
-- No API keys are required.
+
+- This is frontend-only; all responses and device values are demo data.
+- The face uses the included Three.js assets and existing GLB mesh.
+- No API keys are needed.
