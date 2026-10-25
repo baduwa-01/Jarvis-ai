@@ -1,12 +1,13 @@
-# J.A.R.V.I.S. 2D Face + Show More Fix
+J.A.R.V.I.S. central holographic cylinder fix
 
-Replace these files in the repository (keep the same paths):
-- `src/main.tsx`
-- `public/3d/jarvis-avatar.html`
+Replace this file in your repository:
+  public/3d/jarvis-avatar.html
 
-Changes:
-- `SHOW MORE` toggles the hologram's rotating feature-module carousel inside the existing face viewport; it no longer opens the full-screen drawer.
-- Face linework is larger, brighter, and denser; the clipped duplicate status caption inside the iframe is removed.
-- The mouth animation responds to the existing `setSpeaking()` and `pulseAudio()` calls.
+What this changes:
+- Adds translucent cylindrical walls around the central face.
+- Adds bright top/bottom elliptical rims and magenta/cyan inner rings.
+- Adds vertical light guides and subtle horizontal scan lines.
+- Resizes the face to fit inside the cylinder.
+- Keeps the existing animated mouth and feature-module mode.
 
-Important: the current web project is explicitly a UI preview. Mouth motion is driven by the UI's simulated speaking state, not real microphone phonemes or connected TTS audio.
+This patch has not been uploaded to GitHub because the connected GitHub integration returned HTTP 403 (Resource not accessible by integration).
