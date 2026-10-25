@@ -15,23 +15,32 @@ function cylinder(){
  const cx=w/2, top=h*.12, bottom=h*.87, rx=Math.min(w*.46,205), ry=Math.min(h*.09,43), hh=bottom-top;
  x.save(); x.translate(cx,0); x.shadowColor='#00eaff'; x.shadowBlur=18;
  const fill=x.createLinearGradient(-rx,0,rx,0);
- fill.addColorStop(0,'rgba(0,170,255,.03)'); fill.addColorStop(.18,'rgba(0,220,255,.12)');
- fill.addColorStop(.5,'rgba(0,120,220,.05)'); fill.addColorStop(.82,'rgba(0,220,255,.12)');
- fill.addColorStop(1,'rgba(0,170,255,.03)');
+ fill.addColorStop(0,'rgba(0,205,255,.13)'); fill.addColorStop(.12,'rgba(0,230,255,.25)');
+ fill.addColorStop(.30,'rgba(0,145,255,.12)'); fill.addColorStop(.50,'rgba(0,115,230,.08)');
+ fill.addColorStop(.70,'rgba(0,145,255,.12)'); fill.addColorStop(.88,'rgba(0,230,255,.25)');
+ fill.addColorStop(1,'rgba(0,205,255,.13)');
  x.beginPath(); x.moveTo(-rx,top); x.lineTo(-rx,bottom);
  x.quadraticCurveTo(0,bottom+ry*.18,rx,bottom); x.lineTo(rx,top);
  x.quadraticCurveTo(0,top-ry*.18,-rx,top); x.closePath(); x.fillStyle=fill; x.fill();
- x.strokeStyle='#00eaff'; x.lineWidth=1.5; x.globalAlpha=.9;
+ x.strokeStyle='#00eaff'; x.lineWidth=2.2; x.globalAlpha=.98; x.shadowColor='#00eaff'; x.shadowBlur=20;
  x.beginPath(); x.moveTo(-rx,top); x.lineTo(-rx,bottom); x.moveTo(rx,top); x.lineTo(rx,bottom); x.stroke();
+ x.shadowBlur=0; x.globalAlpha=.55; x.strokeStyle='#9cffff'; x.lineWidth=1;
+ x.beginPath(); x.moveTo(-rx+4,top+ry*.3); x.lineTo(-rx+4,bottom-ry*.3); x.moveTo(rx-4,top+ry*.3); x.lineTo(rx-4,bottom-ry*.3); x.stroke();
  for(let i=-2;i<=2;i++){
   const xx=i*rx*.32; x.globalAlpha=i===0?.62:.3; x.strokeStyle=i===0?'#4af5ff':'#1ab9ff'; x.lineWidth=i===0?1.5:1;
   x.beginPath(); x.moveTo(xx*.82,top+ry*.15);
   x.bezierCurveTo(xx*1.08,top+hh*.3,xx*1.08,top+hh*.7,xx*.82,bottom-ry*.1); x.stroke();
  }
  x.save(); x.beginPath(); x.rect(-rx,top,rx*2,hh); x.clip();
- x.globalAlpha=.22; x.strokeStyle='#41efff'; x.lineWidth=.7;
- for(let yy=top+8;yy<bottom;yy+=12){x.beginPath();x.moveTo(-rx,yy);x.lineTo(rx,yy);x.stroke()}
+ x.globalAlpha=.36; x.strokeStyle='#41efff'; x.lineWidth=.8;
+ for(let yy=top+7;yy<bottom;yy+=10){x.beginPath();x.moveTo(-rx,yy);x.lineTo(rx,yy);x.stroke()}
  x.restore();
+ // Moving holographic scan beam across the glass chamber.
+ const scanY=top+((t*34)%(hh));
+ x.save(); x.globalAlpha=.25+Math.sin(t*5)*.08;
+ const beam=x.createLinearGradient(0,scanY-7,0,scanY+7);
+ beam.addColorStop(0,'rgba(0,240,255,0)'); beam.addColorStop(.5,'rgba(0,240,255,.65)'); beam.addColorStop(1,'rgba(0,240,255,0)');
+ x.fillStyle=beam; x.fillRect(-rx+1,scanY-7,rx*2-2,14); x.restore();
  for(const [yy,col,isRim] of [[top,'#00f4ff',true],[bottom,'#00f4ff',true],[top+ry*.28,'#ff4cdb',false],[bottom-ry*.28,'#ff4cdb',false]]){
   x.beginPath();x.ellipse(0,yy,rx*(isRim?1:.92),ry*(isRim?1:.85),0,0,Math.PI*2);
   x.strokeStyle=col;x.globalAlpha=.86;x.lineWidth=isRim?2:1.4;x.shadowColor=col;x.shadowBlur=15;x.stroke()
@@ -40,7 +49,7 @@ function cylinder(){
 }
 
 function face(){
- const scale=Math.min(w*.43,h*.38);x.save();x.translate(w/2,h*.49);x.scale(scale,scale);x.shadowColor='#00eaff';x.shadowBlur=13;const pulse=.9+Math.sin(t*2)*.1;
+ const scale=Math.min(w*.57,h*.42);x.save();x.translate(w/2,h*.49);x.scale(scale,scale);x.shadowColor='#00eaff';x.shadowBlur=13;const pulse=.9+Math.sin(t*2)*.1;
  // Main silhouette
  curve([[-.03,-1.02],[.52,-1.06],[.73,-.69],[.68,-.18]],'#00f3ff',.02,pulse);curve([[.68,-.18],[.64,.25],[.42,.78],[.03,1.02]],'#00f3ff',.02,pulse);curve([[.03,1.02],[-.42,.83],[-.65,.31],[-.68,-.18]],'#00f3ff',.02,pulse);curve([[-.68,-.18],[-.76,-.66],[-.53,-1.04],[-.03,-1.02]],'#00f3ff',.02,pulse);
  curve([[-.66,-.24],[-.86,-.31],[-.83,.08],[-.63,.12]],'#4cecff',.026,.95);curve([[.66,-.24],[.86,-.31],[.83,.08],[.63,.12]],'#4cecff',.026,.95);
