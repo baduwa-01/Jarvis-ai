@@ -1,101 +1,120 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Activity, BatteryCharging, Bot, CheckSquare, ChevronRight, Cloud, Cpu, FileText, Grid2X2, ListTodo, Menu, Mic, MessageCircle, Send, Settings, ShieldCheck, Signal, Sparkles, Volume2, Wifi, X, Zap } from 'lucide-react';
+import { Activity, BatteryCharging, Bot, CheckSquare, ChevronLeft, ChevronRight, Cloud, Cpu, FileText, Grid2X2, ListTodo, Mic, MessageCircle, Send, Settings, ShieldCheck, Wifi, X, Zap, Volume2, Smartphone, Sparkles } from 'lucide-react';
 import './style.css';
 
-type Panel = 'quick' | 'more' | 'settings' | 'tasks' | 'logs' | 'monitors' | 'weather' | null;
-const quickActions = [
-  { label: 'Check battery level', icon: BatteryCharging, reply: 'Battery status preview: 78% remaining.' },
-  { label: "What's the weather?", icon: Cloud, reply: 'Weather preview: Colombo is partly cloudy, 28°C.' },
-  { label: 'Open YouTube', icon: Zap, reply: 'UI demo only — no apps will be opened.' },
-  { label: 'Show my tasks', icon: ListTodo, reply: 'You have 3 sample tasks in this UI preview.' },
-];
+type Panel = 'settings' | 'monitors' | 'battery' | 'ram' | 'network' | 'tasks' | 'logs' | 'weather' | 'quick' | 'more' | null;
 const features = [
-  ['System Monitor','Live device metrics preview'],['Battery Control','Battery status and power info'],['RAM Monitor','Memory usage preview'],['Network Status','Wi-Fi and signal preview'],
-  ['Active Tasks','View sample scheduled tasks'],['Command Logs','Browse demo activity logs'],['Weather','Weather card preview'],['App Launcher','UI demo — no apps launched'],
-  ['Voice Assistant','Voice controls are simulated'],['Memory Notes','Sample notes only'],['Automation','No automation will run'],['Security Center','Permission status preview']
+  { name: 'System Monitor', description: 'Device performance and live metrics', icon: Activity },
+  { name: 'Battery Control', description: 'Battery status and power information', icon: BatteryCharging },
+  { name: 'RAM Monitor', description: 'Memory usage overview', icon: Cpu },
+  { name: 'Network Status', description: 'Wi-Fi and signal status', icon: Wifi },
+  { name: 'Active Tasks', description: 'Review your current task list', icon: CheckSquare },
+  { name: 'Command Logs', description: 'Recent assistant activity', icon: FileText },
+  { name: 'Weather', description: 'Local weather preview', icon: Cloud },
+  { name: 'App Launcher', description: 'App shortcuts preview', icon: Smartphone },
+  { name: 'Voice Assistant', description: 'Voice interface preview', icon: Mic },
+  { name: 'Security Center', description: 'Security status preview', icon: ShieldCheck },
+  { name: 'Quick Actions', description: 'Frequently used commands', icon: Zap },
+  { name: 'AI Preferences', description: 'Assistant settings', icon: Sparkles },
 ];
-function App(){
-  const [panel,setPanel] = useState<Panel>(null);
-  const [message,setMessage] = useState('');
-  const [reply,setReply] = useState('Good evening. How may I assist you this evening?');
-  const [listening,setListening] = useState(false);
-  const [speaking,setSpeaking] = useState(false);
-  const [morePage,setMorePage] = useState(0);
-  const avatar = useRef<HTMLIFrameElement>(null);
-  const [time,setTime] = useState(new Date());
-  useEffect(()=>{const id=setInterval(()=>setTime(new Date()),1000);return()=>clearInterval(id)},[]);
-  const avatarCall=(script:string)=>{try{(avatar.current?.contentWindow as any)?.eval(script)}catch{}}
-  const togglePanel=(next:Panel)=>{
-    const opening = panel !== next;
-    setPanel(opening ? next : null);
-    // SHOW MORE stays inside the hologram viewport; do not open the full-screen drawer.
-    avatarCall(`window.jarvisSetPanels(${next==='more' && opening}, false);`);
+const quickActions = [
+  { label: 'Check battery level', icon: BatteryCharging, text: 'Battery status preview: 78% remaining.' },
+  { label: "What's the weather?", icon: Cloud, text: 'Weather preview: Colombo is partly cloudy, 28°C.' },
+  { label: 'Open YouTube', icon: Zap, text: 'This web UI preview does not launch external apps.' },
+  { label: 'Show my tasks', icon: ListTodo, text: 'You have 3 sample tasks in this UI preview.' },
+];
+const taskItems = ['Review today’s schedule', 'Check battery status', 'Prepare a daily summary'];
+const logItems = ['J.A.R.V.I.S. interface initialized', 'Holographic dashboard loaded', 'Voice interface ready for connection', 'Weather preview refreshed'];
+
+function App() {
+  const [panel, setPanel] = useState<Panel>(null);
+  const [message, setMessage] = useState('');
+  const [reply, setReply] = useState('Good evening, Sir. How may I assist you this evening?');
+  const [listening, setListening] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
+  const [featurePage, setFeaturePage] = useState(0);
+
+  const open = (next: Panel) => setPanel(current => current === next ? null : next);
+  const respond = (text: string) => {
+    setReply(text);
+    setPanel(null);
   };
-  const send=(text=message)=>{
-    if(!text.trim())return;
-    setReply(`“${text.trim()}” — UI preview only. J.A.R.V.I.S. backend is not connected.`);
+  const send = (event: React.FormEvent) => {
+    event.preventDefault();
+    const value = message.trim();
+    if (!value) return;
+    setReply(`“${value}” — UI preview only. J.A.R.V.I.S. backend is not connected.`);
     setMessage('');
     setSpeaking(true);
-    avatarCall('window.setSpeaking(true); window.pulseAudio(0.7);');
-    window.setTimeout(()=>{setSpeaking(false);avatarCall('window.setSpeaking(false); window.pulseAudio(0);')},1800);
+    window.setTimeout(() => setSpeaking(false), 1600);
   };
-  const toggleListen=()=>{
-    setListening(v=>!v);
-    setReply(listening?'Microphone preview stopped.':'Microphone preview active — voice recognition is not connected.');
-  };
-  const openPanel=(p:Panel)=>{setPanel(panel===p?null:p);avatarCall('window.jarvisSetPanels(false,false);')};
-  const FeatureIcon=({name}:{name:string})=>{const props={size:19}; if(name.includes('Monitor'))return <Activity {...props}/>; if(name.includes('Battery'))return <BatteryCharging {...props}/>;if(name.includes('Network'))return <Wifi {...props}/>;if(name.includes('Tasks'))return <CheckSquare {...props}/>;if(name.includes('Logs'))return <FileText {...props}/>;if(name.includes('Weather'))return <Cloud {...props}/>;if(name.includes('Voice'))return <Mic {...props}/>;return <Sparkles {...props}/>};
-  return <main className="app-shell">
-    <div className="ambient ambient-a"/><div className="ambient ambient-b"/>
-    <div className="statusbar"><span>{time.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</span><div><Wifi size={17}/><Signal size={17}/><BatteryCharging size={17}/></div></div>
-    <header className="topbar">
-      <div className="brand-mark"><Bot size={39}/></div><div className="brand"><h1>J.A.R.V.I.S.</h1><span>JUST A RATHER VERY INTELLIGENT SYSTEM</span></div>
-      <div className="header-right"><div className="online"><i/> <b>ONLINE</b><small>UI PREVIEW</small></div><button className="icon-btn" onClick={()=>openPanel('settings')} aria-label="Settings"><Settings size={23}/></button></div>
-    </header>
-    <section className="top-strip">
-      <button className="strip-card weather-strip" onClick={()=>openPanel('weather')}><Cloud size={37}/><span><small>Colombo, LK</small><strong>28°C</strong><em>Partly Cloudy</em></span></button>
-      <div className="strip-card greeting"><span>“Good evening. How may I assist you this evening?”</span></div>
-      <div className="strip-card clock"><small>{time.toLocaleDateString('en-GB',{weekday:'short',day:'2-digit',month:'short',year:'numeric'})}</small><strong>{time.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false})}</strong></div>
-    </section>
-    <section className="hero">
-      <div className="side-stack left-stack">
-        <button className="metric-card" onClick={()=>openPanel('monitors')}><span className="metric-icon"><Activity/></span><span><b>SYSTEM<br/>MONITORS</b><small>Open dashboard</small></span><ChevronRight className="chev"/></button>
-        <button className="metric-card" onClick={()=>openPanel('monitors')}><span className="metric-icon"><BatteryCharging/></span><span><b>BATTERY</b><small>78% <i className="meter"><i style={{width:'78%'}}/></i></small></span><ChevronRight className="chev"/></button>
-        <button className="metric-card" onClick={()=>openPanel('monitors')}><span className="metric-icon"><Cpu/></span><span><b>RAM</b><small>4.2 / 8 GB <i className="meter"><i style={{width:'53%'}}/></i></small></span><ChevronRight className="chev"/></button>
-        <button className="metric-card" onClick={()=>openPanel('monitors')}><span className="metric-icon"><Wifi/></span><span><b>NETWORK</b><small>Wi-Fi connected</small></span><ChevronRight className="chev"/></button>
+
+  const hotspots = [
+    { name: 'Weather details', className: 'hot-weather', action: () => open('weather') },
+    { name: 'Greeting', className: 'hot-greeting', action: () => respond('Good evening, Sir. How may I assist you this evening?') },
+    { name: 'Clock', className: 'hot-clock', action: () => respond(`Current local time: ${new Date().toLocaleTimeString()}`) },
+    { name: 'Settings', className: 'hot-settings', action: () => open('settings') },
+    { name: 'System monitors', className: 'hot-monitor', action: () => open('monitors') },
+    { name: 'Battery', className: 'hot-battery', action: () => open('battery') },
+    { name: 'RAM', className: 'hot-ram', action: () => open('ram') },
+    { name: 'Network', className: 'hot-network', action: () => open('network') },
+    { name: 'Active tasks', className: 'hot-tasks', action: () => open('tasks') },
+    { name: 'Command logs', className: 'hot-logs', action: () => open('logs') },
+    { name: 'Weather card', className: 'hot-weather-card', action: () => open('weather') },
+    { name: 'View all logs', className: 'hot-all-logs', action: () => open('logs') },
+    { name: 'Quick access', className: 'hot-quick', action: () => open('quick') },
+    { name: 'Microphone', className: 'hot-mic', action: () => { setListening(v => !v); setReply(listening ? 'Microphone preview stopped.' : 'Microphone preview active — voice recognition is not connected.'); } },
+    { name: 'Show more features', className: 'hot-more', action: () => { setFeaturePage(0); open('more'); } },
+    { name: 'Voice output', className: 'hot-sound', action: () => { setSpeaking(v => !v); setReply(speaking ? 'Voice output preview stopped.' : 'Voice output preview active.'); } },
+    { name: 'Check battery shortcut', className: 'hot-action-battery', action: () => respond(quickActions[0].text) },
+    { name: 'Weather shortcut', className: 'hot-action-weather', action: () => respond(quickActions[1].text) },
+    { name: 'YouTube shortcut', className: 'hot-action-youtube', action: () => respond(quickActions[2].text) },
+    { name: 'Tasks shortcut', className: 'hot-action-tasks', action: () => open('tasks') },
+  ];
+
+  return <main className="page">
+    <div className="dashboard" aria-label="JARVIS futuristic dashboard">
+      <img className="reference-art" src={`${import.meta.env.BASE_URL}jarvis-reference-dashboard.png`} alt="J.A.R.V.I.S. holographic dashboard reference design" draggable={false} />
+      <div className="hotspot-layer">
+        {hotspots.map(item => <button key={item.className} type="button" aria-label={item.name} title={item.name} className={`hotspot ${item.className}`} onClick={item.action} />)}
+        <form className="message-hotspot" onSubmit={send} aria-label="Send a message to JARVIS">
+          <MessageCircle className="message-icon" size={22} aria-hidden="true" />
+          <input value={message} onChange={e => setMessage(e.target.value)} aria-label="Type your message" placeholder="Type your message or say something..." />
+          <button type="submit" aria-label="Send message"><Send size={22} /></button>
+        </form>
+        {reply !== 'Good evening, Sir. How may I assist you this evening?' && <div className="response-overlay" role="status">{reply}</div>}
+        {listening && <div className="state-chip listening-chip"><span /> MICROPHONE PREVIEW ACTIVE</div>}
+        {speaking && <div className="state-chip speaking-chip"><span /> VOICE OUTPUT ACTIVE</div>}
       </div>
-      <div className="face-stage"><div className="stage-orbit orbit-one"/><div className="stage-orbit orbit-two"/><div className="stage-grid"/><div className="corner corner-tl"/><div className="corner corner-tr"/><div className="corner corner-bl"/><div className="corner corner-br"/>
-        <iframe ref={avatar} title="JARVIS animated 2D holographic avatar" src={`${import.meta.env.BASE_URL}3d/jarvis-avatar.html`} className="avatar-frame" allow="autoplay"/>
-        <div className="face-label"><span className="pulse-dot"/> HOLOGRAPHIC CORE <span>•</span> ONLINE</div>
-      </div>
-      <div className="side-stack right-stack">
-        <button className="metric-card" onClick={()=>openPanel('tasks')}><span className="metric-icon"><CheckSquare/></span><span><b>ACTIVE TASKS</b><small>3 sample tasks</small></span><ChevronRight className="chev"/></button>
-        <button className="metric-card" onClick={()=>openPanel('logs')}><span className="metric-icon"><FileText/></span><span><b>COMMAND LOGS</b><small>Latest activity</small></span><ChevronRight className="chev"/></button>
-        <button className="metric-card" onClick={()=>openPanel('weather')}><span className="metric-icon"><Cloud/></span><span><b>WEATHER</b><small>28°C · Cloudy</small></span><ChevronRight className="chev"/></button>
-        <button className="metric-card" onClick={()=>openPanel('logs')}><span className="metric-icon"><Menu/></span><span><b>VIEW ALL LOGS</b><small>Demo entries</small></span><ChevronRight className="chev"/></button>
-      </div>
-    </section>
-    <nav className="feature-controls">
-      <button className={`wide-control ${panel==='quick'?'selected':''}`} onClick={()=>togglePanel('quick')}><Zap/><b>QUICK ACCESS</b><ChevronRight className="control-chevron"/></button>
-      <button className={`mic-control ${listening?'listening':''}`} onClick={toggleListen} aria-label="Toggle microphone preview"><span className="sound-bars"><i/><i/><i/><i/><i/></span><Mic size={32}/><span className="sound-bars"><i/><i/><i/><i/><i/></span></button>
-      <button className={`wide-control ${panel==='more'?'selected':''}`} onClick={()=>togglePanel('more')}><Grid2X2/><b>SHOW MORE</b><ChevronRight className="control-chevron"/></button>
-    </nav>
-    <section className="assistant-card">
-      <div className="assistant-head"><div className="mini-logo"><Bot size={25}/></div><div className="assistant-id"><b>J.A.R.V.I.S.</b><small><i/> ONLINE · UI PREVIEW</small></div><button className="sound-toggle" onClick={()=>{setSpeaking(v=>!v);avatarCall(`window.setSpeaking(${!speaking});`)}}><Volume2/></button></div>
-      <div className="reply-bubble">{reply}</div>
-      <div className="quick-actions">{quickActions.map(a=><button key={a.label} onClick={()=>send(a.label)}><a.icon size={16}/><span>{a.label}</span></button>)}</div>
-      <form className="composer" onSubmit={e=>{e.preventDefault();send()}}><MessageCircle size={22}/><input value={message} onChange={e=>setMessage(e.target.value)} placeholder="Type your message or say something..."/><button type="submit" aria-label="Send message"><Send size={22}/></button></form>
-    </section>
-    {panel && panel!=='more' && <div className="panel-backdrop" onClick={()=>{setPanel(null);avatarCall('window.jarvisSetPanels(false,false);')}}><section className="drawer" onClick={e=>e.stopPropagation()}><div className="drawer-head"><div><small>J.A.R.V.I.S. / UI PREVIEW</small><h2>{panel==='quick'?'Quick Access':panel==='settings'?'Settings':panel==='tasks'?'Active Tasks':panel==='logs'?'Command Logs':panel==='weather'?'Weather':'System Monitors'}</h2></div><button className="icon-btn" onClick={()=>{setPanel(null);avatarCall('window.jarvisSetPanels(false,false);')}}><X/></button></div>
-      {panel==='quick' && <div className="quick-grid">{quickActions.map(a=><button key={a.label} onClick={()=>{setReply(a.reply);setPanel(null)}}><a.icon/><span>{a.label}</span><ChevronRight/></button>)}</div>}
-      {panel==='settings' && <div className="settings-list"><div><span><ShieldCheck/> Backend connection</span><b className="demo-badge">NOT CONNECTED</b></div><div><span><Mic/> Microphone input</span><b>SIMULATED</b></div><div><span><Volume2/> Voice output</span><b>SIMULATED</b></div><p>This website is a visual prototype. It does not connect to the Kotlin backend, request permissions, access your microphone, or control your phone.</p></div>}
-      {panel==='tasks' && <div className="sample-list">{['Morning briefing · 08:00','Check weather · On demand','Review system status · Demo'].map((x,i)=><div key={x}><CheckSquare/><span>{x}</span><small>{i===0?'SAMPLE':'PREVIEW'}</small></div>)}</div>}
-      {panel==='logs' && <div className="sample-list">{['10:42:05 · UI preview opened','10:42:12 · SHOW MORE selected','10:42:20 · Sample action tapped'].map(x=><div key={x}><FileText/><span>{x}</span><small>DEMO</small></div>)}</div>}
-      {panel==='weather' && <div className="weather-detail"><Cloud size={54}/><strong>28°C</strong><b>Partly Cloudy</b><span>Colombo, Sri Lanka · sample display</span><div><span>Humidity <b>72%</b></span><span>Wind <b>14 km/h</b></span></div><small>Weather values are sample UI data; live weather is not connected.</small></div>}
-      {panel==='monitors' && <div className="monitor-grid"><div><BatteryCharging/><span>Battery</span><b>78%</b><i><i style={{width:'78%'}}/></i></div><div><Cpu/><span>RAM</span><b>4.2 / 8 GB</b><i><i style={{width:'53%'}}/></i></div><div><Wifi/><span>Network</span><b>Connected</b></div><div><Activity/><span>CPU load</span><b>32% · sample</b></div><p>These values are static demo data and do not read actual device telemetry.</p></div>}
-    </section></div>}
-    <footer><span><Sparkles size={13}/> FRONTEND PREVIEW ONLY</span><span>No AI · No backend · No phone actions</span></footer>
-  </main>
+    </div>
+
+    {panel && <div className="modal-backdrop" onClick={() => setPanel(null)}>
+      <section className={`panel panel-${panel}`} role="dialog" aria-modal="true" aria-label={panel === 'more' ? 'Feature modules' : panel === 'quick' ? 'Quick access' : panel} onClick={e => e.stopPropagation()}>
+        <header className="panel-header">
+          <div><span className="eyebrow">J.A.R.V.I.S. / UI PREVIEW</span><h2>{({ settings: 'Settings', monitors: 'System Monitors', battery: 'Battery Status', ram: 'RAM Monitor', network: 'Network Status', tasks: 'Active Tasks', logs: 'Command Logs', weather: 'Weather', quick: 'Quick Access', more: 'Feature Modules' } as Record<Exclude<Panel, null>, string>)[panel]}</h2></div>
+          <button className="close-button" onClick={() => setPanel(null)} aria-label="Close panel"><X /></button>
+        </header>
+        {panel === 'more' && <>
+          <p className="panel-description">Holographic feature modules. This is a UI preview; phone actions are not connected.</p>
+          <div className="feature-grid">{features.slice(featurePage * 6, featurePage * 6 + 6).map(item => <button className="feature-tile" key={item.name} onClick={() => respond(`${item.name}: ${item.description}.`)}><span><item.icon size={20}/></span><b>{item.name}</b><small>{item.description}</small></button>)}</div>
+          <footer className="pager"><button disabled={featurePage === 0} onClick={() => setFeaturePage(0)}><ChevronLeft size={16}/> Previous</button><span>{featurePage + 1} / 2</span><button disabled={featurePage === 1} onClick={() => setFeaturePage(1)}>Next <ChevronRight size={16}/></button></footer>
+        </>}
+        {panel === 'quick' && <div className="quick-grid">{quickActions.map(a => <button key={a.label} onClick={() => respond(a.text)}><a.icon size={20}/><span>{a.label}</span><ChevronRight size={18}/></button>)}</div>}
+        {panel === 'settings' && <div className="settings-list"><div><span><Volume2/> Voice output</span><b>PREVIEW</b></div><div><span><Mic/> Microphone access</span><b>NOT CONNECTED</b></div><div><span><ShieldCheck/> Privacy & permissions</span><b>LOCAL UI</b></div><p>This web dashboard is a frontend preview. Device actions require a connected backend or native bridge.</p></div>}
+        {panel === 'monitors' && <div className="monitor-grid"><Metric icon={<BatteryCharging/>} title="Battery" value="78%" progress={78}/><Metric icon={<Cpu/>} title="Memory" value="4.2 / 8 GB" progress={53}/><Metric icon={<Wifi/>} title="Network" value="Wi-Fi connected" progress={92}/><Metric icon={<Activity/>} title="System" value="Nominal" progress={86}/></div>}
+        {panel === 'battery' && <Detail icon={<BatteryCharging size={42}/>} title="78%" description="Battery status sample. Live device telemetry is not connected." />}
+        {panel === 'ram' && <Detail icon={<Cpu size={42}/>} title="4.2 / 8 GB" description="Memory usage preview. Live system metrics require a native device connection." />}
+        {panel === 'network' && <Detail icon={<Wifi size={42}/>} title="Wi-Fi connected" description="Signal status preview. Network diagnostics are not connected." />}
+        {panel === 'weather' && <Detail icon={<Cloud size={42}/>} title="28°C" description="Colombo, Sri Lanka · Partly cloudy. Weather shown here is sample UI data." />}
+        {panel === 'tasks' && <div className="list-items">{taskItems.map((t, i) => <div key={t}><CheckSquare/><span>{t}</span><small>{i === 0 ? 'IN PROGRESS' : 'SCHEDULED'}</small></div>)}</div>}
+        {panel === 'logs' && <div className="list-items">{logItems.map((t, i) => <div key={t}><FileText/><span>{t}</span><small>{`${i + 1}m ago`}</small></div>)}</div>}
+      </section>
+    </div>}
+  </main>;
 }
-createRoot(document.getElementById('root')!).render(<React.StrictMode><App/></React.StrictMode>);
+
+function Metric({icon,title,value,progress}:{icon:React.ReactNode;title:string;value:string;progress:number}) { return <div className="metric"><span>{icon}</span><small>{title}</small><b>{value}</b><i><i style={{width:`${progress}%`}}/></i></div>; }
+function Detail({icon,title,description}:{icon:React.ReactNode;title:string;description:string}) { return <div className="detail"><span>{icon}</span><strong>{title}</strong><p>{description}</p></div>; }
+
+createRoot(document.getElementById('root')!).render(<React.StrictMode><App /></React.StrictMode>);
