@@ -25,7 +25,7 @@ function App(){
   const avatar = useRef<HTMLIFrameElement>(null);
   const [time,setTime] = useState(new Date());
   useEffect(()=>{const id=setInterval(()=>setTime(new Date()),1000);return()=>clearInterval(id)},[]);
-  const avatarCall=(script:string)=>{try{avatar.current?.contentWindow?.eval(script)}catch{}}
+  const avatarCall=(script:string)=>{try{(avatar.current?.contentWindow as any)?.eval(script)}catch{}}
   const togglePanel=(next:Panel)=>{const isMore=next==='more'; const isQuick=next==='quick'; setPanel(panel===next?null:next); avatarCall(`window.jarvisSetPanels(${isMore && panel!==next}, ${isQuick && panel!==next});`)};
   const send=(text=message)=>{if(!text.trim())return;setReply(`“${text.trim()}” — UI preview only. J.A.R.V.I.S. backend is not connected.`);setMessage('');setSpeaking(true);avatarCall('window.setSpeaking(true); window.pulseAudio(0.7);');window.setTimeout(()=>{setSpeaking(false);avatarCall('window.setSpeaking(false); window.pulseAudio(0.1);')},1800)};
   const toggleListen=()=>{setListening(v=>!v);setReply(listening?'Microphone preview stopped.':'Microphone preview active — voice recognition is not connected.');};
