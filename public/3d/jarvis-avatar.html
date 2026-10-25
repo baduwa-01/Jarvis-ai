@@ -12,7 +12,7 @@ function curve(a,col='#35eaff',lw=.012,alpha=.9){x.save();x.globalAlpha=alpha;x.
 function line(a,col='#35eaff',lw=.012,alpha=.9){x.save();x.globalAlpha=alpha;x.strokeStyle=col;x.lineWidth=lw;x.lineCap='round';x.lineJoin='round';x.beginPath();a.forEach((p,i)=>i?x.lineTo(...p):x.moveTo(...p));x.stroke();x.restore()}
 
 function cylinder(){
- const cx=w/2, top=h*.12, bottom=h*.87, rx=Math.min(w*.46,205), ry=Math.min(h*.09,43), hh=bottom-top;
+ const cx=w/2, top=h*.12, bottom=h*.87, rx=Math.min(w*.47,500), ry=Math.min(h*.09,43), hh=bottom-top;
  x.save(); x.translate(cx,0); x.shadowColor='#00eaff'; x.shadowBlur=18;
  const fill=x.createLinearGradient(-rx,0,rx,0);
  fill.addColorStop(0,'rgba(0,205,255,.13)'); fill.addColorStop(.12,'rgba(0,230,255,.25)');
@@ -49,7 +49,7 @@ function cylinder(){
 }
 
 function face(){
- const scale=Math.min(w*.57,h*.42);x.save();x.translate(w/2,h*.49);x.scale(scale,scale);x.shadowColor='#00eaff';x.shadowBlur=13;const pulse=.9+Math.sin(t*2)*.1;
+ const scale=Math.min(w*.34,h*.36);x.save();x.translate(w/2,h*.49);x.scale(scale,scale);x.shadowColor='#00eaff';x.shadowBlur=13;const pulse=.9+Math.sin(t*2)*.1;
  // Main silhouette
  curve([[-.03,-1.02],[.52,-1.06],[.73,-.69],[.68,-.18]],'#00f3ff',.02,pulse);curve([[.68,-.18],[.64,.25],[.42,.78],[.03,1.02]],'#00f3ff',.02,pulse);curve([[.03,1.02],[-.42,.83],[-.65,.31],[-.68,-.18]],'#00f3ff',.02,pulse);curve([[-.68,-.18],[-.76,-.66],[-.53,-1.04],[-.03,-1.02]],'#00f3ff',.02,pulse);
  curve([[-.66,-.24],[-.86,-.31],[-.83,.08],[-.63,.12]],'#4cecff',.026,.95);curve([[.66,-.24],[.86,-.31],[.83,.08],[.63,.12]],'#4cecff',.026,.95);
