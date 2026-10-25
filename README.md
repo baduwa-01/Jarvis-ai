@@ -35,3 +35,8 @@ npm run preview
 - This is frontend-only; all responses and device values are demo data.
 - The face uses the included Three.js assets and existing GLB mesh.
 - No API keys are needed.
+
+
+## Hologram refinement
+
+The central 2D hologram now uses a larger cyan wireframe face, stronger translucent cylinder walls, brighter vertical glass edges, more visible scan lines, and a moving scan beam. The existing face canvas continues to animate the mouth when the UI preview enters its simulated speaking state. `SHOW MORE` is designed to show its feature carousel inside the central hologram rather than opening the full-screen drawer. This remains a frontend-only preview; microphone phoneme tracking and real device actions are not connected.
