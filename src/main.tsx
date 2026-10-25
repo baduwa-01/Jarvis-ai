@@ -26,10 +26,25 @@ function App(){
   const [time,setTime] = useState(new Date());
   useEffect(()=>{const id=setInterval(()=>setTime(new Date()),1000);return()=>clearInterval(id)},[]);
   const avatarCall=(script:string)=>{try{(avatar.current?.contentWindow as any)?.eval(script)}catch{}}
-  const togglePanel=(next:Panel)=>{const isMore=next==='more'; const isQuick=next==='quick'; setPanel(panel===next?null:next); avatarCall(`window.jarvisSetPanels(${isMore && panel!==next}, ${isQuick && panel!==next});`)};
-  const send=(text=message)=>{if(!text.trim())return;setReply(`“${text.trim()}” — UI preview only. J.A.R.V.I.S. backend is not connected.`);setMessage('');setSpeaking(true);avatarCall('window.setSpeaking(true); window.pulseAudio(0.7);');window.setTimeout(()=>{setSpeaking(false);avatarCall('window.setSpeaking(false); window.pulseAudio(0.1);')},1800)};
-  const toggleListen=()=>{setListening(v=>!v);setReply(listening?'Microphone preview stopped.':'Microphone preview active — voice recognition is not connected.');};
-  const openPanel=(p:Panel)=>setPanel(panel===p?null:p);
+  const togglePanel=(next:Panel)=>{
+    const opening = panel !== next;
+    setPanel(opening ? next : null);
+    // SHOW MORE stays inside the hologram viewport; do not open the full-screen drawer.
+    avatarCall(`window.jarvisSetPanels(${next==='more' && opening}, false);`);
+  };
+  const send=(text=message)=>{
+    if(!text.trim())return;
+    setReply(`“${text.trim()}” — UI preview only. J.A.R.V.I.S. backend is not connected.`);
+    setMessage('');
+    setSpeaking(true);
+    avatarCall('window.setSpeaking(true); window.pulseAudio(0.7);');
+    window.setTimeout(()=>{setSpeaking(false);avatarCall('window.setSpeaking(false); window.pulseAudio(0);')},1800);
+  };
+  const toggleListen=()=>{
+    setListening(v=>!v);
+    setReply(listening?'Microphone preview stopped.':'Microphone preview active — voice recognition is not connected.');
+  };
+  const openPanel=(p:Panel)=>{setPanel(panel===p?null:p);avatarCall('window.jarvisSetPanels(false,false);')};
   const FeatureIcon=({name}:{name:string})=>{const props={size:19}; if(name.includes('Monitor'))return <Activity {...props}/>; if(name.includes('Battery'))return <BatteryCharging {...props}/>;if(name.includes('Network'))return <Wifi {...props}/>;if(name.includes('Tasks'))return <CheckSquare {...props}/>;if(name.includes('Logs'))return <FileText {...props}/>;if(name.includes('Weather'))return <Cloud {...props}/>;if(name.includes('Voice'))return <Mic {...props}/>;return <Sparkles {...props}/>};
   return <main className="app-shell">
     <div className="ambient ambient-a"/><div className="ambient ambient-b"/>
@@ -51,7 +66,7 @@ function App(){
         <button className="metric-card" onClick={()=>openPanel('monitors')}><span className="metric-icon"><Wifi/></span><span><b>NETWORK</b><small>Wi-Fi connected</small></span><ChevronRight className="chev"/></button>
       </div>
       <div className="face-stage"><div className="stage-orbit orbit-one"/><div className="stage-orbit orbit-two"/><div className="stage-grid"/><div className="corner corner-tl"/><div className="corner corner-tr"/><div className="corner corner-bl"/><div className="corner corner-br"/>
-        <iframe ref={avatar} title="JARVIS 3D wireframe avatar" src={`${import.meta.env.BASE_URL}3d/jarvis-avatar.html`} className="avatar-frame" allow="autoplay" />
+        <iframe ref={avatar} title="JARVIS animated 2D holographic avatar" src={`${import.meta.env.BASE_URL}3d/jarvis-avatar.html`} className="avatar-frame" allow="autoplay"/>
         <div className="face-label"><span className="pulse-dot"/> HOLOGRAPHIC CORE <span>•</span> ONLINE</div>
       </div>
       <div className="side-stack right-stack">
@@ -72,8 +87,7 @@ function App(){
       <div className="quick-actions">{quickActions.map(a=><button key={a.label} onClick={()=>send(a.label)}><a.icon size={16}/><span>{a.label}</span></button>)}</div>
       <form className="composer" onSubmit={e=>{e.preventDefault();send()}}><MessageCircle size={22}/><input value={message} onChange={e=>setMessage(e.target.value)} placeholder="Type your message or say something..."/><button type="submit" aria-label="Send message"><Send size={22}/></button></form>
     </section>
-    {panel && <div className="panel-backdrop" onClick={()=>setPanel(null)}><section className="drawer" onClick={e=>e.stopPropagation()}><div className="drawer-head"><div><small>J.A.R.V.I.S. / UI PREVIEW</small><h2>{panel==='more'?'Feature Modules':panel==='quick'?'Quick Access':panel==='settings'?'Settings':panel==='tasks'?'Active Tasks':panel==='logs'?'Command Logs':panel==='weather'?'Weather':'System Monitors'}</h2></div><button className="icon-btn" onClick={()=>{setPanel(null);avatarCall('window.jarvisSetPanels(false,false);')}}><X/></button></div>
-      {panel==='more' && <><p className="drawer-note">Swipe-style carousel preview. These are UI demonstrations only; no phone actions run.</p><div className="feature-grid">{features.slice(morePage*6,morePage*6+6).map(([name,desc])=><button className="feature-tile" key={name} onClick={()=>setReply(`${name}: ${desc}. UI preview only.`)}><span><FeatureIcon name={name}/></span><b>{name}</b><small>{desc}</small></button>)}</div><div className="pager"><button onClick={()=>setMorePage(Math.max(0,morePage-1))} disabled={morePage===0}>← Previous</button><span>{morePage+1} / 2</span><button onClick={()=>setMorePage(Math.min(1,morePage+1))} disabled={morePage===1}>Next →</button></div></>}
+    {panel && panel!=='more' && <div className="panel-backdrop" onClick={()=>{setPanel(null);avatarCall('window.jarvisSetPanels(false,false);')}}><section className="drawer" onClick={e=>e.stopPropagation()}><div className="drawer-head"><div><small>J.A.R.V.I.S. / UI PREVIEW</small><h2>{panel==='quick'?'Quick Access':panel==='settings'?'Settings':panel==='tasks'?'Active Tasks':panel==='logs'?'Command Logs':panel==='weather'?'Weather':'System Monitors'}</h2></div><button className="icon-btn" onClick={()=>{setPanel(null);avatarCall('window.jarvisSetPanels(false,false);')}}><X/></button></div>
       {panel==='quick' && <div className="quick-grid">{quickActions.map(a=><button key={a.label} onClick={()=>{setReply(a.reply);setPanel(null)}}><a.icon/><span>{a.label}</span><ChevronRight/></button>)}</div>}
       {panel==='settings' && <div className="settings-list"><div><span><ShieldCheck/> Backend connection</span><b className="demo-badge">NOT CONNECTED</b></div><div><span><Mic/> Microphone input</span><b>SIMULATED</b></div><div><span><Volume2/> Voice output</span><b>SIMULATED</b></div><p>This website is a visual prototype. It does not connect to the Kotlin backend, request permissions, access your microphone, or control your phone.</p></div>}
       {panel==='tasks' && <div className="sample-list">{['Morning briefing · 08:00','Check weather · On demand','Review system status · Demo'].map((x,i)=><div key={x}><CheckSquare/><span>{x}</span><small>{i===0?'SAMPLE':'PREVIEW'}</small></div>)}</div>}
@@ -84,5 +98,4 @@ function App(){
     <footer><span><Sparkles size={13}/> FRONTEND PREVIEW ONLY</span><span>No AI · No backend · No phone actions</span></footer>
   </main>
 }
-
 createRoot(document.getElementById('root')!).render(<React.StrictMode><App/></React.StrictMode>);
